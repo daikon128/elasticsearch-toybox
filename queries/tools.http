@@ -1,0 +1,6 @@
+### GET MAPPING
+GET {{HOST}}/_mapping
+
+### GET field
+
+GET /_mapping/field
