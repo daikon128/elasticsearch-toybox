@@ -4,3 +4,107 @@ GET {{HOST}}/_mapping
 ### GET field
 
 GET /_mapping/field
+
+
+### set relation
+PUT {{HOST}}/product
+Content-Type: application/json
+
+{
+  "mappings": {
+    "properties": {
+      "name": {
+        "type": "keyword"
+      },
+      "product_relation": {
+        "type": "join",
+        "relations": {
+          "product": "product_detail"
+        }
+
+      }
+    }
+  }
+}
+
+### set parent
+POST {{HOST}}/product/_doc/1
+Content-Type: application/json
+
+{
+  "name": "product name 1",
+  "product_relation": {
+    "name": "product"
+  }
+}
+
+### set children
+POST {{HOST}}/product/_doc/2?routing=1
+Content-Type: application/json
+
+{
+  "price": 100,
+  "product_relation": {
+    "name": "product_detail",
+    "parent": 1
+  }
+}
+
+### search query1
+POST {{HOST}}/_search
+
+{
+  "query": {
+
+    "has_parent": {
+      "parent_type": "product",
+      "query": {
+        "match_all": {}
+      }
+    }
+  }
+}
+
+
+### search query2
+POST {{HOST}}/_search
+
+{
+  "query": {
+    "has_child": {
+      "type": "product",
+      "query": {
+        "match_all": {}
+      }
+    }
+  }
+}
+
+### search query3
+POST {{HOST}}/_search
+
+{
+  "query": {
+
+    "bool": {
+      "must": [
+        {
+        "has_parent": {
+          "parent_type": "product",
+          "query": {
+            "match_all": {}
+          }
+        }
+      },{
+          "term": {
+              "price": {
+                "value": 100
+              }
+          }
+        }
+      ]
+    }
+  }
+}
+
+
